@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ConfigurationError, loadConfig } from '../src/config.js';
+import { ConfigurationError, loadConfig, loadCredentials } from '../src/config.js';
 
 describe('loadConfig', () => {
   it('validates required Marvin environment variables', () => {
-    expect(() => loadConfig({})).toThrow(ConfigurationError);
+    expect(() => loadConfig({}, {})).toThrow(ConfigurationError);
   });
 
   it('defaults to read-only mode', () => {
@@ -26,5 +26,82 @@ describe('loadConfig', () => {
     });
 
     expect(config.readOnly).toBe(false);
+  });
+
+  it('falls back to credentials file for workspaceSlug and siteClientToken', () => {
+    const credentials = {
+      activeWorkspace: 'my-workspace',
+      workspaces: {
+        'my-workspace': { siteToken: 'cred_token_123' },
+      },
+    };
+
+    const config = loadConfig(
+      { MARVIN_API_URL: 'https://marvin.example.com' },
+      credentials,
+    );
+
+    expect(config.workspaceSlug).toBe('my-workspace');
+    expect(config.siteClientToken).toBe('cred_token_123');
+  });
+
+  it('env vars take precedence over credentials file', () => {
+    const credentials = {
+      activeWorkspace: 'cred-workspace',
+      workspaces: {
+        'cred-workspace': { siteToken: 'cred_token' },
+      },
+    };
+
+    const config = loadConfig(
+      {
+        MARVIN_API_URL: 'https://marvin.example.com',
+        MARVIN_SITE_CLIENT_TOKEN: 'env_token',
+        MARVIN_WORKSPACE_SLUG: 'env-workspace',
+      },
+      credentials,
+    );
+
+    expect(config.workspaceSlug).toBe('env-workspace');
+    expect(config.siteClientToken).toBe('env_token');
+  });
+
+  it('uses workspace slug from env to look up siteToken in credentials', () => {
+    const credentials = {
+      activeWorkspace: 'other-workspace',
+      workspaces: {
+        'env-workspace': { siteToken: 'env_ws_token' },
+        'other-workspace': { siteToken: 'other_token' },
+      },
+    };
+
+    const config = loadConfig(
+      {
+        MARVIN_API_URL: 'https://marvin.example.com',
+        MARVIN_WORKSPACE_SLUG: 'env-workspace',
+      },
+      credentials,
+    );
+
+    expect(config.workspaceSlug).toBe('env-workspace');
+    expect(config.siteClientToken).toBe('env_ws_token');
+  });
+
+  it('includes helpful error messages referencing credentials file', () => {
+    try {
+      loadConfig({ MARVIN_API_URL: 'https://marvin.example.com' }, {});
+      expect.fail('should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ConfigurationError);
+      const message = (error as ConfigurationError).message;
+      expect(message).toContain('~/.marvin/credentials.json');
+    }
+  });
+});
+
+describe('loadCredentials', () => {
+  it('returns empty object for non-existent file', () => {
+    const result = loadCredentials('/tmp/nonexistent-marvin-creds.json');
+    expect(result).toEqual({});
   });
 });
