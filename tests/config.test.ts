@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ConfigurationError, loadConfig, loadCredentials } from '../src/config.js';
+import { ConfigurationError, loadConfig, loadCredentials, toSdkConfig } from '../src/config.js';
 
 describe('loadConfig', () => {
   it('validates required Marvin environment variables', () => {
@@ -97,11 +97,72 @@ describe('loadConfig', () => {
       expect(message).toContain('~/.marvin/credentials.json');
     }
   });
+
+  it('accepts all valid log levels', () => {
+    for (const level of ['silent', 'error', 'warn', 'info', 'debug'] as const) {
+      const config = loadConfig({
+        MARVIN_API_URL: 'https://marvin.example.com',
+        MARVIN_SITE_CLIENT_TOKEN: 'token',
+        MARVIN_WORKSPACE_SLUG: 'demo',
+        MARVIN_MCP_LOG_LEVEL: level,
+      });
+      expect(config.logLevel).toBe(level);
+    }
+  });
+
+  it('rejects invalid API URLs', () => {
+    expect(() =>
+      loadConfig({
+        MARVIN_API_URL: 'not-a-url',
+        MARVIN_SITE_CLIENT_TOKEN: 'token',
+        MARVIN_WORKSPACE_SLUG: 'demo',
+      }),
+    ).toThrow(ConfigurationError);
+  });
+
+  it('readOnly treats "TRUE" (case-insensitive) as true', () => {
+    const config = loadConfig({
+      MARVIN_API_URL: 'https://marvin.example.com',
+      MARVIN_SITE_CLIENT_TOKEN: 'token',
+      MARVIN_WORKSPACE_SLUG: 'demo',
+      MARVIN_MCP_READ_ONLY: 'TRUE',
+    });
+    expect(config.readOnly).toBe(true);
+  });
+
+  it('readOnly treats non-"true" strings as false', () => {
+    const config = loadConfig({
+      MARVIN_API_URL: 'https://marvin.example.com',
+      MARVIN_SITE_CLIENT_TOKEN: 'token',
+      MARVIN_WORKSPACE_SLUG: 'demo',
+      MARVIN_MCP_READ_ONLY: 'yes',
+    });
+    expect(config.readOnly).toBe(false);
+  });
 });
 
 describe('loadCredentials', () => {
   it('returns empty object for non-existent file', () => {
     const result = loadCredentials('/tmp/nonexistent-marvin-creds.json');
     expect(result).toEqual({});
+  });
+});
+
+describe('toSdkConfig', () => {
+  it('maps config to SDK format', () => {
+    const config = loadConfig({
+      MARVIN_API_URL: 'https://marvin.example.com',
+      MARVIN_SITE_CLIENT_TOKEN: 'token123',
+      MARVIN_WORKSPACE_SLUG: 'demo',
+    });
+
+    const sdkConfig = toSdkConfig(config);
+
+    expect(sdkConfig).toEqual({
+      apiUrl: 'https://marvin.example.com',
+      siteClientToken: 'token123',
+      workspaceSlug: 'demo',
+      autoInitialize: false,
+    });
   });
 });
