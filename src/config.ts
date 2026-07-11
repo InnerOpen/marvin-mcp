@@ -36,7 +36,7 @@ export function loadCredentials(
   if (!existsSync(credentialsPath)) return {};
   try {
     const parsed = JSON.parse(readFileSync(credentialsPath, 'utf-8'));
-    if (!parsed || typeof parsed !== 'object') return {};
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
     return parsed;
   } catch {
     return {};
