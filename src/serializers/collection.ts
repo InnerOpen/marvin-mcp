@@ -8,6 +8,8 @@ export function serializeCollectionSummary(value: unknown) {
     'description',
     'icon',
     'color',
+    'role',
+    'placementMetadataJson',
     'sortOrder',
     'isSmart',
     'entryCount',
