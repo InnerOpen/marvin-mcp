@@ -8,14 +8,23 @@ export function serializeCollectionSummary(value: unknown) {
     'description',
     'icon',
     'color',
-    'role',
-    'placementMetadataJson',
+    'metadataJson',
     'sortOrder',
     'isSmart',
     'entryCount',
     'createdAt',
     'updatedAt',
   ]);
+}
+
+export function serializeEntryCollection(value: unknown) {
+  const ec = rawJson(value);
+  return {
+    role: ec.role,
+    position: ec.position,
+    metadataJson: ec.metadataJson,
+    collection: ec.collection ? serializeCollectionSummary(ec.collection) : undefined,
+  };
 }
 
 export function serializeCollection(value: unknown) {

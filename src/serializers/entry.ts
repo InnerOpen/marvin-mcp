@@ -1,6 +1,6 @@
 import { pick, rawJson } from './common.js';
 import { serializeAsset } from './asset.js';
-import { serializeCollectionSummary } from './collection.js';
+import { serializeEntryCollection } from './collection.js';
 import { serializeResourceSummary } from './resource.js';
 
 export function serializeEntrySummary(value: unknown) {
@@ -28,7 +28,7 @@ export function serializeEntry(value: unknown) {
     contentMarkdown: entry.contentMarkdown,
     metadataJson: entry.metadataJson,
     collections: Array.isArray(entry.collections)
-      ? entry.collections.map(serializeCollectionSummary)
+      ? entry.collections.map(serializeEntryCollection)
       : undefined,
     assets: Array.isArray(entry.assets) ? entry.assets.map(serializeAsset) : undefined,
     resources: Array.isArray(entry.resources)
