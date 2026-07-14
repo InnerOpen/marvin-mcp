@@ -50,9 +50,12 @@ export function loadConfig(
   const creds = credentials ?? loadCredentials();
 
   const workspaceSlug = env.MARVIN_WORKSPACE_SLUG || creds.activeWorkspace;
-  const siteClientToken =
-    env.MARVIN_SITE_CLIENT_TOKEN ||
-    (workspaceSlug ? creds.workspaces?.[workspaceSlug]?.siteToken : undefined);
+
+  // Stored credentials beat env var — lets 'marvin login --site-token' take effect
+  // even when Claude Code has an old token cached in its MCP server env config.
+  // Env var is the fallback for CI/automation where no credentials file exists.
+  const storedSiteToken = workspaceSlug ? creds.workspaces?.[workspaceSlug]?.siteToken : undefined;
+  const siteClientToken = storedSiteToken || env.MARVIN_SITE_CLIENT_TOKEN;
 
   const result = configSchema.safeParse({
     apiUrl: env.MARVIN_API_URL,
@@ -67,10 +70,10 @@ export function loadConfig(
       .map((issue) => {
         const path = issue.path.join('.');
         if (path === 'siteClientToken') {
-          return `MARVIN_SITE_CLIENT_TOKEN is required. Set the env var or run 'marvin workspace token' to save credentials to ~/.marvin/credentials.json`;
+          return `MARVIN_SITE_CLIENT_TOKEN is required. Set the env var or run 'marvin login --site-token <token> --workspace <slug>' to save credentials to ~/.marvin/credentials.json`;
         }
         if (path === 'workspaceSlug') {
-          return `MARVIN_WORKSPACE_SLUG is required. Set the env var or run 'marvin login' to save credentials to ~/.marvin/credentials.json`;
+          return `MARVIN_WORKSPACE_SLUG is required. Set the env var or run 'marvin login --site-token <token> --workspace <slug>' to save credentials to ~/.marvin/credentials.json`;
         }
         return issue.message;
       })
