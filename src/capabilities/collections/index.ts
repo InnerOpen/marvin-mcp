@@ -45,7 +45,7 @@ export const collectionsCapability: Capability = {
         try {
           const collectionResult = await client.getCollection(slug);
           if (collectionResult === null) throw new MarvinObjectNotFoundError('collection', slug);
-          const collection = serializeCollection(collectionResult);
+          const collection = serializeCollectionSummary(collectionResult);
           return toolSuccess(`Collection ${slug} loaded.`, { collection });
         } catch (error) {
           logger.warn('marvin_get_collection failed', { slug, error });
@@ -63,9 +63,10 @@ export const collectionsCapability: Capability = {
       },
       async ({ slug }) => {
         try {
-          const entries = await client.getCollectionEntries(slug);
-          const data = { entries: entries.map(serializeEntrySummary), count: entries.length };
-          return toolSuccess(`Found ${entries.length} entries in ${slug}.`, data);
+          const collectionResult = await client.getCollection(slug);
+          if (collectionResult === null) throw new MarvinObjectNotFoundError('collection', slug);
+          const collection = serializeCollection(collectionResult);
+          return toolSuccess(`Collection ${slug} with entries loaded.`, { collection });
         } catch (error) {
           logger.warn('marvin_get_collection_entries failed', { slug, error });
           return toolError(error, 'Getting Marvin collection entries');
