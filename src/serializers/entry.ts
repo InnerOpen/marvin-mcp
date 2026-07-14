@@ -26,7 +26,7 @@ export function serializeEntry(value: unknown) {
     ...serializeEntrySummary(entry),
     dataJson: entry.dataJson,
     contentMarkdown: entry.contentMarkdown,
-    metadata: entry.metadata,
+    metadataJson: entry.metadataJson,
     collections: Array.isArray(entry.collections)
       ? entry.collections.map(serializeCollectionSummary)
       : undefined,

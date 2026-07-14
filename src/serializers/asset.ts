@@ -16,7 +16,7 @@ export function serializeAsset(value: unknown) {
     'publicUrl',
     'altText',
     'description',
-    'metadata',
+    'metadataJson',
     'createdAt',
     'updatedAt',
   ]);

@@ -17,6 +17,6 @@ export function serializeSite(value: unknown) {
     'favicon',
     'locale',
     'timezone',
-    'metadata',
+    'metadataJson',
   ]);
 }

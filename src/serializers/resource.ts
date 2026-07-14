@@ -9,6 +9,7 @@ export function serializeResourceSummary(value: unknown) {
     'description',
     'externalId',
     'url',
+    'entries',
     'createdAt',
     'updatedAt',
   ]);
@@ -18,6 +19,6 @@ export function serializeResource(value: unknown) {
   const resource = rawJson(value);
   return {
     ...serializeResourceSummary(resource),
-    metadata: resource.metadata,
+    metadataJson: resource.metadataJson,
   };
 }
