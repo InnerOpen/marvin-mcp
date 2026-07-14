@@ -1,23 +1,21 @@
 import { pick, rawJson } from './common.js';
 
 export function serializeAsset(value: unknown) {
-  return pick(rawJson(value), [
-    'id',
-    'slug',
-    'name',
-    'originalFilename',
-    'filename',
-    'extension',
-    'mimeType',
-    'assetType',
-    'fileSize',
-    'width',
-    'height',
-    'publicUrl',
-    'altText',
-    'description',
-    'metadataJson',
-    'createdAt',
-    'updatedAt',
-  ]);
+  const asset = rawJson(value);
+  return {
+    ...pick(asset, [
+      'slug',
+      'name',
+      'mimeType',
+      'assetType',
+      'fileSize',
+      'width',
+      'height',
+      'publicUrl',
+      'altText',
+      'description',
+      'metadataJson',
+    ]),
+    ...(asset.entryMetadata !== undefined ? { entryMetadata: asset.entryMetadata } : {}),
+  };
 }

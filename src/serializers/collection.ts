@@ -20,10 +20,12 @@ export function serializeCollectionSummary(value: unknown) {
 export function serializeEntryCollection(value: unknown) {
   const ec = rawJson(value);
   return {
-    role: ec.role,
-    position: ec.position,
-    metadataJson: ec.metadataJson,
     collection: ec.collection ? serializeCollectionSummary(ec.collection) : undefined,
+    entryMetadata: ec.entryMetadata ?? {
+      role: ec.role ?? null,
+      position: ec.position ?? 0,
+      metadataJson: ec.metadataJson ?? null,
+    },
   };
 }
 
@@ -47,5 +49,31 @@ export function serializeCollection(value: unknown) {
           ]),
         )
       : undefined,
+  };
+}
+
+export function serializeCollectionEntry(value: unknown) {
+  const entry = rawJson(value);
+  return {
+    slug: entry.slug,
+    title: entry.title,
+    entryType: entry.entryType,
+    summary: entry.summary,
+    status: entry.status,
+    publishedAt: entry.publishedAt,
+    metadataJson: entry.metadataJson,
+    collection: entry.collection
+      ? {
+          slug: entry.collection.slug,
+          name: entry.collection.name,
+          description: entry.collection.description,
+          metadataJson: entry.collection.metadataJson,
+          entryMetadata: entry.collection.entryMetadata,
+        }
+      : undefined,
+    collectionSlugs: entry.collectionSlugs,
+    assetSlugs: entry.assetSlugs,
+    resourceSlugs: entry.resourceSlugs,
+    order: entry.order,
   };
 }

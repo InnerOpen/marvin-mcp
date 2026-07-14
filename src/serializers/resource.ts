@@ -20,5 +20,6 @@ export function serializeResource(value: unknown) {
   return {
     ...serializeResourceSummary(resource),
     metadataJson: resource.metadataJson,
+    ...(resource.entryMetadata !== undefined ? { entryMetadata: resource.entryMetadata } : {}),
   };
 }
