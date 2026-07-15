@@ -2,7 +2,7 @@ import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { MarvinObjectNotFoundError } from '../../errors/types.js';
 import { jsonResource, resourceError, toolError, toolSuccess } from '../../mcp-result.js';
-import { serializeCollection, serializeCollectionSummary } from '../../serializers/collection.js';
+import { serializeCollection, serializeCollectionSummary, serializeCollectionEntry } from '../../serializers/collection.js';
 import { serializeEntrySummary } from '../../serializers/entry.js';
 import type { Capability } from '../types.js';
 
@@ -63,10 +63,12 @@ export const collectionsCapability: Capability = {
       },
       async ({ slug }) => {
         try {
-          const collectionResult = await client.getCollection(slug);
-          if (collectionResult === null) throw new MarvinObjectNotFoundError('collection', slug);
-          const collection = serializeCollection(collectionResult);
-          return toolSuccess(`Collection ${slug} with entries loaded.`, { collection });
+          const entries = await client.getCollectionEntries(slug);
+          const data = {
+            entries: entries.map(serializeCollectionEntry),
+            count: entries.length,
+          };
+          return toolSuccess(`Collection ${slug} entries loaded.`, data);
         } catch (error) {
           logger.warn('marvin_get_collection_entries failed', { slug, error });
           return toolError(error, 'Getting Marvin collection entries');
