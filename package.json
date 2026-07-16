@@ -42,7 +42,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@inneropen/marvin-sdk": "2.0.0-next.17",
+    "@inneropen/marvin-sdk": "develop",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.25.76"
   },
