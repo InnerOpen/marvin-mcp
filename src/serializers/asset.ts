@@ -4,6 +4,7 @@ export function serializeAsset(value: unknown) {
   const asset = rawJson(value);
   return {
     ...pick(asset, [
+      'id',
       'slug',
       'name',
       'mimeType',
