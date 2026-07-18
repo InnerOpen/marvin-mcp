@@ -54,6 +54,7 @@ export function serializeCollection(value: unknown) {
 
 export function serializeCollectionEntry(value: unknown) {
   const entry = rawJson(value);
+  const collection = entry.collection ? rawJson(entry.collection) : undefined;
   return {
     slug: entry.slug,
     title: entry.title,
@@ -62,13 +63,13 @@ export function serializeCollectionEntry(value: unknown) {
     status: entry.status,
     publishedAt: entry.publishedAt,
     metadataJson: entry.metadataJson,
-    collection: entry.collection
+    collection: collection
       ? {
-          slug: entry.collection.slug,
-          name: entry.collection.name,
-          description: entry.collection.description,
-          metadataJson: entry.collection.metadataJson,
-          entryMetadata: entry.collection.entryMetadata,
+          slug: collection.slug,
+          name: collection.name,
+          description: collection.description,
+          metadataJson: collection.metadataJson,
+          entryMetadata: collection.entryMetadata,
         }
       : undefined,
     collectionSlugs: entry.collectionSlugs,

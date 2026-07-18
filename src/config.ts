@@ -11,6 +11,10 @@ const booleanString = z
 const configSchema = z.object({
   apiUrl: z.string().url('MARVIN_API_URL must be a valid URL'),
   siteClientToken: z.string().min(1, 'MARVIN_SITE_CLIENT_TOKEN is required'),
+  // Optional user token. When present, platform (authoring) capabilities are enabled: AI
+  // operations + compose, gated server-side by the token's role (min_role) and the workspace's
+  // invocation_sources policy. Absent → read-only publish tools only.
+  userToken: z.string().min(1).optional(),
   workspaceSlug: z.string().min(1, 'MARVIN_WORKSPACE_SLUG is required'),
   logLevel: z.enum(['silent', 'error', 'warn', 'info', 'debug']).default('warn'),
   readOnly: booleanString.default('true'),
@@ -27,7 +31,7 @@ export class ConfigurationError extends Error {
 
 interface MarvinCredentials {
   activeWorkspace?: string;
-  workspaces?: Record<string, { siteToken?: string }>;
+  workspaces?: Record<string, { siteToken?: string; userToken?: string }>;
 }
 
 export function loadCredentials(
@@ -57,9 +61,13 @@ export function loadConfig(
   const storedSiteToken = workspaceSlug ? creds.workspaces?.[workspaceSlug]?.siteToken : undefined;
   const siteClientToken = storedSiteToken || env.MARVIN_SITE_CLIENT_TOKEN;
 
+  const storedUserToken = workspaceSlug ? creds.workspaces?.[workspaceSlug]?.userToken : undefined;
+  const userToken = storedUserToken || env.MARVIN_USER_TOKEN;
+
   const result = configSchema.safeParse({
     apiUrl: env.MARVIN_API_URL,
     siteClientToken,
+    userToken,
     workspaceSlug,
     logLevel: env.MARVIN_MCP_LOG_LEVEL ?? 'warn',
     readOnly: env.MARVIN_MCP_READ_ONLY,

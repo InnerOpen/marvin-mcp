@@ -1,5 +1,7 @@
 import { createMarvinClient } from '@inneropen/marvin-sdk/publish';
 import type { MarvinConfig } from '@inneropen/marvin-sdk/publish';
+import { createPlatformClient } from '@inneropen/marvin-sdk/platform';
+import type { PlatformClient } from '@inneropen/marvin-sdk/platform';
 import type {
   GetAssetsOptions,
   GetEntriesOptions,
@@ -25,4 +27,14 @@ export interface MarvinClientLike {
 
 export function createMarvinSdkClient(config: MarvinMcpConfig): MarvinClientLike {
   return createMarvinClient(toSdkConfig(config) as MarvinConfig) as MarvinClientLike;
+}
+
+/**
+ * The authenticated platform client — only when a user token is configured. Powers the
+ * authoring capabilities (AI operations + compose). Server-side gating (min_role,
+ * invocation_sources) still applies to every call.
+ */
+export function createMarvinPlatformClient(config: MarvinMcpConfig): PlatformClient | undefined {
+  if (!config.userToken) return undefined;
+  return createPlatformClient({ apiUrl: config.apiUrl, userToken: config.userToken });
 }
