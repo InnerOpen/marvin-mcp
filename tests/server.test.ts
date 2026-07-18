@@ -273,7 +273,7 @@ describe('resources tool handlers', () => {
     const result = await tool.handler({ slug: 'fabric' }, {});
 
     expect(result.structuredContent.resource).toHaveProperty('slug', 'fabric');
-    expect(result.structuredContent.resource).toHaveProperty('metadata', { weight: '10oz' });
+    expect(result.structuredContent.resource).toHaveProperty('metadataJson', { weight: '10oz' });
   });
 
   it('returns error on getResource failure', async () => {
@@ -488,7 +488,7 @@ describe('resource template handlers', () => {
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.resource).toHaveProperty('slug', 'fabric');
-    expect(parsed.resource).toHaveProperty('metadata', { weight: '10oz' });
+    expect(parsed.resource).toHaveProperty('metadataJson', { weight: '10oz' });
   });
 });
 

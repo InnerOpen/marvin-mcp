@@ -160,13 +160,13 @@ describe('serializeEntry', () => {
       title: 'Test',
       slug: 'test',
       status: 'published',
-      collections: [{ id: 'c1', name: 'Pages', slug: 'pages' }],
+      collections: [{ collection: { id: 'c1', name: 'Pages', slug: 'pages' } }],
       assets: [{ id: 'a1', slug: 'hero', name: 'Hero' }],
       resources: [{ id: 'r1', name: 'Fabric', slug: 'fabric', resourceType: 'material' }],
     });
 
     expect(entry.collections).toHaveLength(1);
-    expect(entry.collections![0]).toHaveProperty('slug', 'pages');
+    expect((entry.collections![0] as any).collection).toHaveProperty('slug', 'pages');
     expect(entry.assets).toHaveLength(1);
     expect(entry.resources).toHaveLength(1);
   });
@@ -258,10 +258,10 @@ describe('serializeResource', () => {
       name: 'Fabric',
       slug: 'fabric',
       resourceType: 'material',
-      metadata: { weight: '10oz' },
+      metadataJson: { weight: '10oz' },
     });
 
-    expect(result).toHaveProperty('metadata', { weight: '10oz' });
+    expect(result).toHaveProperty('metadataJson', { weight: '10oz' });
   });
 });
 

@@ -100,7 +100,7 @@ export function createFakeClient(): MarvinClientLike {
       name: 'Fabric',
       slug,
       resourceType: 'material',
-      metadata: { weight: '10oz' },
+      metadataJson: { weight: '10oz' },
       createdAt: '2026-01-01',
       updatedAt: '2026-01-02',
     }),
