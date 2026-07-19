@@ -1,3 +1,10 @@
+# [1.0.0-next.2](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0-next.1...v1.0.0-next.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* publish @inneropen/marvin-mcp with public access ([fe785c0](https://github.com/InnerOpen/marvin-mcp/commit/fe785c0a3b5fbc2563a69feb496b4cb1611c3f0f))
+
 # 1.0.0-next.1 (2026-07-19)
 
 
