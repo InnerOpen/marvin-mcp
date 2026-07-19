@@ -1,3 +1,10 @@
+# [1.0.0-next.3](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0-next.2...v1.0.0-next.3) (2026-07-19)
+
+
+### Features
+
+* add read-only insight/forms/entry-type MCP tools ([4af5ea3](https://github.com/InnerOpen/marvin-mcp/commit/4af5ea35f07802a5ed56afa797b12ac8c6c5b6b9))
+
 # [1.0.0-next.2](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0-next.1...v1.0.0-next.2) (2026-07-19)
 
 
