@@ -1,6 +1,6 @@
 {
   "name": "@inneropen/marvin-mcp",
-  "version": "0.1.0",
+  "version": "1.0.0-next.1",
   "description": "Official Model Context Protocol server for Marvin CMS.",
   "type": "module",
   "bin": {
