@@ -38,6 +38,9 @@
     "url": "https://github.com/InnerOpen/marvin-mcp/issues"
   },
   "homepage": "https://github.com/InnerOpen/marvin-mcp#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
