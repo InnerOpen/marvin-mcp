@@ -44,7 +44,7 @@ export const operationsCapability: Capability = {
         inputSchema: {
           entryType: z.string().describe('entry type slug or id'),
           brief: z.string().describe('what the entry should be about'),
-          assetIds: z.array(z.string()).optional().describe('image asset ids to attach / use as vision input'),
+          assetIds: z.array(z.string()).optional().describe('image asset ids to attach / use as vision input. Order matters: first → hero, and only the first 4 are sent to the model as vision — list the most important images first.'),
           modelOverride: z.string().optional(),
         },
       },
