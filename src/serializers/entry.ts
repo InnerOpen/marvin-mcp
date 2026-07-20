@@ -34,5 +34,6 @@ export function serializeEntry(value: unknown) {
     resources: Array.isArray(entry.resources)
       ? entry.resources.map(serializeResourceSummary)
       : undefined,
+    tags: Array.isArray(entry.tags) ? entry.tags : undefined,
   };
 }
