@@ -24,7 +24,7 @@ describe('createServer', () => {
 
     const tools = registered(server, '_registeredTools');
     expect(tools).toContain('marvin_get_workspace');
-    expect(tools).toContain('marvin_list_entries');
+    expect(tools).toContain('marvin_describe_capabilities');
     expect(tools).not.toContain('marvin_create_entry');
     expect(tools).not.toContain('marvin_publish_entry');
   });
@@ -36,21 +36,29 @@ describe('createServer', () => {
       logger: silentLogger,
     });
 
+    // Token-less mode: only workspace + assets + meta remain hand-written. ALL entry / collection
+    // / resource / entry-type TOOLS now live in the core tool registry and are projected by
+    // `toolsCapability` only with a user token — the registry is the single source of truth.
     const tools = registered(server, '_registeredTools');
-    const expectedTools = [
-      'marvin_describe_capabilities',
-      'marvin_get_workspace',
+    const expectedTools = ['marvin_describe_capabilities', 'marvin_get_workspace'];
+    for (const tool of expectedTools) {
+      expect(tools, `missing tool: ${tool}`).toContain(tool);
+    }
+    // Moved to the registry — not hand-registered here anymore.
+    for (const tool of [
       'marvin_list_entries',
       'marvin_get_entry',
       'marvin_list_collections',
       'marvin_get_collection',
       'marvin_get_collection_entries',
-      'marvin_list_assets',
       'marvin_list_resources',
       'marvin_get_resource',
-    ];
-    for (const tool of expectedTools) {
-      expect(tools, `missing tool: ${tool}`).toContain(tool);
+      'marvin_list_entry_types',
+      'marvin_get_entry_type',
+      'marvin_list_assets',
+      'marvin_get_asset',
+    ]) {
+      expect(tools, `tool should have moved to the registry: ${tool}`).not.toContain(tool);
     }
   });
 
@@ -92,28 +100,16 @@ describe('createServer', () => {
     expect(resources).toContain('marvin://resources');
   });
 
-  it('invokes the SDK client from tool handlers', async () => {
+  it('invokes the SDK client from a token-less tool handler', async () => {
     const client = createFakeClient();
-    const spy = vi.spyOn(client, 'getEntries');
+    const spy = vi.spyOn(client, 'getWorkspaceInfo');
     const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_list_entries;
+    const tool = (server as any)._registeredTools.marvin_get_workspace;
 
-    const result = await tool.handler({ limit: 5, entryType: 'page' }, {});
+    const result = await tool.handler({}, {});
 
-    expect(spy).toHaveBeenCalledWith({ limit: 5, entryType: 'page' });
-    expect(result.structuredContent.count).toBe(1);
-  });
-
-  it('returns a structured not-found error when the prerelease SDK returns null', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getEntry').mockResolvedValue(null);
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_get_entry;
-
-    const result = await tool.handler({ slug: 'missing' }, {});
-
-    expect(result.isError).toBe(true);
-    expect(result.structuredContent.error.code).toBe('not_found');
+    expect(spy).toHaveBeenCalled();
+    expect(result.structuredContent.workspace).toHaveProperty('slug', 'demo');
   });
 });
 
@@ -143,150 +139,6 @@ describe('workspace tool handler', () => {
 
     expect(result.isError).toBe(true);
     expect(result.structuredContent.error.code).toBe('authentication_failed');
-  });
-});
-
-describe('collections tool handlers', () => {
-  it('marvin_list_collections returns collection summaries', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_list_collections;
-    const result = await tool.handler({}, {});
-
-    expect(result.structuredContent.count).toBe(1);
-    expect(result.structuredContent.collections[0]).toHaveProperty('slug', 'pages');
-  });
-
-  it('marvin_get_collection returns full collection', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_get_collection;
-    const result = await tool.handler({ slug: 'pages' }, {});
-
-    expect(result.structuredContent.collection).toHaveProperty('slug', 'pages');
-  });
-
-  it('marvin_get_collection returns error for null result', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getCollection').mockResolvedValue(null);
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_get_collection;
-    const result = await tool.handler({ slug: 'missing' }, {});
-
-    expect(result.isError).toBe(true);
-    expect(result.structuredContent.error.code).toBe('not_found');
-  });
-
-  it('marvin_get_collection_entries returns entries', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_get_collection_entries;
-    const result = await tool.handler({ slug: 'pages' }, {});
-
-    expect(result.structuredContent.count).toBe(0);
-    expect(result.structuredContent.entries).toEqual([]);
-  });
-
-  it('returns error when getCollections throws', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getCollections').mockRejectedValue(
-      Object.assign(new Error('server error'), { status: 500 }),
-    );
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_list_collections;
-    const result = await tool.handler({}, {});
-
-    expect(result.isError).toBe(true);
-    expect(result.structuredContent.error.code).toBe('marvin_unavailable');
-  });
-});
-
-describe('assets tool handler', () => {
-  it('marvin_list_assets returns serialized assets', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_list_assets;
-    const result = await tool.handler({}, {});
-
-    expect(result.structuredContent.count).toBe(1);
-    const asset = result.structuredContent.assets[0];
-    expect(asset).toHaveProperty('slug', 'hero');
-    expect(asset).not.toHaveProperty('storageKey');
-    expect(asset).not.toHaveProperty('checksum');
-  });
-
-  it('passes filter args to client', async () => {
-    const client = createFakeClient();
-    const spy = vi.spyOn(client, 'getAssets');
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_list_assets;
-    await tool.handler({ type: 'image', limit: 10 }, {});
-
-    expect(spy).toHaveBeenCalledWith({ type: 'image', limit: 10 });
-  });
-
-  it('returns error on failure', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getAssets').mockRejectedValue(new Error('timeout'));
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_list_assets;
-    const result = await tool.handler({}, {});
-
-    expect(result.isError).toBe(true);
-    expect(result.structuredContent.error.code).toBe('timeout');
-  });
-});
-
-describe('resources tool handlers', () => {
-  it('marvin_list_resources returns resource summaries', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_list_resources;
-    const result = await tool.handler({}, {});
-
-    expect(result.structuredContent.count).toBe(1);
-    expect(result.structuredContent.resources[0]).toHaveProperty('slug', 'fabric');
-  });
-
-  it('marvin_get_resource returns full resource with metadata', async () => {
-    const server = createServer({
-      config: testConfig,
-      client: createFakeClient(),
-      logger: silentLogger,
-    });
-    const tool = (server as any)._registeredTools.marvin_get_resource;
-    const result = await tool.handler({ slug: 'fabric' }, {});
-
-    expect(result.structuredContent.resource).toHaveProperty('slug', 'fabric');
-    expect(result.structuredContent.resource).toHaveProperty('metadataJson', { weight: '10oz' });
-  });
-
-  it('returns error on getResource failure', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getResource').mockRejectedValue(
-      Object.assign(new Error('not found'), { status: 404 }),
-    );
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
-    const tool = (server as any)._registeredTools.marvin_get_resource;
-    const result = await tool.handler({ slug: 'missing' }, {});
-
-    expect(result.isError).toBe(true);
-    expect(result.structuredContent.error.code).toBe('not_found');
   });
 });
 

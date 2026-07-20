@@ -1,38 +1,15 @@
-import { z } from 'zod';
-import { toolError, toolSuccess } from '../../mcp-result.js';
-import { serializeAsset } from '../../serializers/asset.js';
 import type { Capability } from '../types.js';
 
-const listAssetsSchema = z.object({
-  type: z.string().optional(),
-  limit: z.number().int().positive().max(100).optional(),
-  offset: z.number().int().min(0).optional(),
-});
-
+/**
+ * Assets — review prompt only. The asset TOOLS (list_assets / get_asset) live in the core tool
+ * registry (projected by `toolsCapability` as marvin_list_assets / marvin_get_asset); the registry
+ * is the single source of truth.
+ */
 export const assetsCapability: Capability = {
   id: 'assets',
   title: 'Assets',
-  summary: 'Review published Marvin asset metadata without returning binary payloads.',
-  register({ server, client, logger }) {
-    server.registerTool(
-      'marvin_list_assets',
-      {
-        title: 'List Marvin assets',
-        description: 'List Marvin asset metadata. Binary media payloads are not returned.',
-        inputSchema: listAssetsSchema,
-      },
-      async (args) => {
-        try {
-          const assets = await client.getAssets(args);
-          const data = { assets: assets.map(serializeAsset), count: assets.length };
-          return toolSuccess(`Found ${assets.length} assets.`, data);
-        } catch (error) {
-          logger.warn('marvin_list_assets failed', error);
-          return toolError(error, 'Listing Marvin assets');
-        }
-      },
-    );
-
+  summary: 'Guide review of Marvin asset metadata (prompt); asset tools come from the registry.',
+  register({ server }) {
     server.registerPrompt(
       'review_assets',
       {

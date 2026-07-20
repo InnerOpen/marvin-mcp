@@ -8,6 +8,8 @@ import { insightsCapability } from './insights/index.js';
 import { metaCapability } from './meta/index.js';
 import { operationsCapability } from './operations/index.js';
 import { resourcesCapability } from './resources/index.js';
+import { toolsCapability } from './tools/index.js';
+import { workflowsCapability } from './workflows/index.js';
 import { workspaceCapability } from './workspace/index.js';
 
 export const capabilities: Capability[] = [
@@ -21,6 +23,8 @@ export const capabilities: Capability[] = [
   formsCapability, // read-only forms + submissions — only active with a user token
   insightsCapability, // AI executions, AI policy, event log, task history — user token only
   operationsCapability, // authoring (AI operations + compose) — only active with a user token
+  toolsCapability, // core read/query tools projected from the registry — user token only
+  workflowsCapability, // MCP-exposed workflows (automations) run as tools — user token only
 ];
 
 export function registerCapabilities(context: CapabilityContext): void {

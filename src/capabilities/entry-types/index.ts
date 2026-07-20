@@ -1,65 +1,17 @@
-import { z } from 'zod';
-import { jsonResource, resourceError, toolError, toolSuccess } from '../../mcp-result.js';
+import { jsonResource, resourceError } from '../../mcp-result.js';
 import { serializeEntrySummary } from '../../serializers/entry.js';
-import { serializeEntryType, serializeEntryTypeSummary } from '../../serializers/entryType.js';
 import type { Capability } from '../types.js';
 
-const getEntryTypeSchema = z.object({
-  id: z.string().min(1).describe('entry type id or slug'),
-});
-
+/**
+ * Entry Types — token-less inferred-from-entries RESOURCE + audit prompt. The entry-type TOOLS
+ * (list_entry_types / get_entry_type, incl. full schema + recipe) live in the core tool registry
+ * (projected by `toolsCapability`); the registry is the single source of truth.
+ */
 export const entryTypesCapability: Capability = {
   id: 'entry-types',
   title: 'Entry Types',
-  summary: 'Inspect entry types — full schema/recipe via the platform token, or inferred from entries.',
-  register({ server, client, platform, logger }) {
-    // Real entry-type list/get — only with a user token. The publishing SDK cannot list types,
-    // so the inferred-from-entries resource below stays as a read-only fallback.
-    if (platform) {
-      server.registerTool(
-        'marvin_list_entry_types',
-        {
-          title: 'List Marvin entry types',
-          description:
-            'List the workspace entry types (name, slug, flags). Use marvin_get_entry_type for the ' +
-            'full field schema + authoring recipe — needed before composing an entry of that type.',
-        },
-        async () => {
-          try {
-            const types = await platform.entryTypes.list();
-            const data = {
-              entryTypes: types.map(serializeEntryTypeSummary),
-              count: types.length,
-            };
-            return toolSuccess(`Found ${types.length} entry types.`, data);
-          } catch (error) {
-            logger.warn('marvin_list_entry_types failed', error);
-            return toolError(error, 'Listing Marvin entry types');
-          }
-        },
-      );
-
-      server.registerTool(
-        'marvin_get_entry_type',
-        {
-          title: 'Get Marvin entry type',
-          description:
-            'Get one entry type by id or slug, including its field schema (schemaJson) and authoring ' +
-            'recipe (recipeJson). The field schema is what compose fills.',
-          inputSchema: getEntryTypeSchema,
-        },
-        async ({ id }) => {
-          try {
-            const entryType = serializeEntryType(await platform.entryTypes.get(id));
-            return toolSuccess(`Entry type ${id} loaded.`, { entryType });
-          } catch (error) {
-            logger.warn('marvin_get_entry_type failed', { id, error });
-            return toolError(error, 'Getting Marvin entry type');
-          }
-        },
-      );
-    }
-
+  summary: 'Inspect entry types inferred from entries (resource) and audit the model (prompt).',
+  register({ server, client, logger }) {
     server.registerResource(
       'entry-types',
       'marvin://entry-types',

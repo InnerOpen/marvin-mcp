@@ -12,9 +12,11 @@ async function main() {
   const client = createMarvinSdkClient(config);
   const platform = createMarvinPlatformClient(config);
 
-  // Pre-fetch the operation registry so capabilities register synchronously. Best-effort:
-  // if the backend is unreachable, compose still registers and reads keep working.
+  // Pre-fetch the operation + core tool registries so capabilities register synchronously.
+  // Best-effort: if the backend is unreachable, compose still registers and reads keep working.
   let operations;
+  let tools;
+  let workflows;
   if (platform) {
     logger.info('Platform client enabled — authoring capabilities active.');
     try {
@@ -22,9 +24,24 @@ async function main() {
     } catch (error) {
       logger.warn('Could not pre-fetch the operation registry (compose still available)', error);
     }
+    try {
+      tools = await platform.ai.tools.list();
+    } catch (error) {
+      logger.warn('Could not pre-fetch the core tool registry', error);
+    }
+    try {
+      // ADMIN-gated: a non-admin / user-less token may 403 — degrade to no workflows.
+      const automations = await platform.automations.list();
+      workflows = automations.filter(
+        (wf) => wf.enabled && wf.definition?.trigger?.type === 'mcp',
+      );
+    } catch (error) {
+      workflows = [];
+      logger.warn('Could not pre-fetch workflows (automations are admin-gated)', error);
+    }
   }
 
-  const server = createServer({ config, client, platform, operations, logger });
+  const server = createServer({ config, client, platform, operations, tools, workflows, logger });
   const transport = new StdioServerTransport();
 
   await server.connect(transport);

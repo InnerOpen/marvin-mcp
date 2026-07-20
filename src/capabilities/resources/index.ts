@@ -1,63 +1,18 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-import { jsonResource, resourceError, toolError, toolSuccess } from '../../mcp-result.js';
+import { jsonResource, resourceError } from '../../mcp-result.js';
 import { serializeResource, serializeResourceSummary } from '../../serializers/resource.js';
 import type { Capability } from '../types.js';
 
-const slugSchema = z.object({ slug: z.string().min(1) });
-
-const listResourcesSchema = z.object({
-  resourceType: z.string().optional(),
-  limit: z.number().int().positive().max(100).optional(),
-  offset: z.number().int().min(0).optional(),
-});
-
+/**
+ * Resources — read-only RESOURCES + review prompt. All resource TOOLS (list_resources /
+ * get_resource) live in the core tool registry (projected by `toolsCapability`); the registry is
+ * the single source of truth.
+ */
 export const resourcesCapability: Capability = {
   id: 'resources',
   title: 'Resources',
-  summary: 'Review reusable Marvin structured resources.',
+  summary: 'Read reusable Marvin resources (resources) and guide review (prompt).',
   register({ server, client, logger }) {
-    server.registerTool(
-      'marvin_list_resources',
-      {
-        title: 'List Marvin resources',
-        description:
-          'List reusable Marvin resources with SDK-supported resourceType pagination filters.',
-        inputSchema: listResourcesSchema,
-      },
-      async (args) => {
-        try {
-          const resources = await client.getResources(args);
-          const data = {
-            resources: resources.map(serializeResourceSummary),
-            count: resources.length,
-          };
-          return toolSuccess(`Found ${resources.length} resources.`, data);
-        } catch (error) {
-          logger.warn('marvin_list_resources failed', error);
-          return toolError(error, 'Listing Marvin resources');
-        }
-      },
-    );
-
-    server.registerTool(
-      'marvin_get_resource',
-      {
-        title: 'Get Marvin resource',
-        description: 'Get one reusable Marvin resource by slug.',
-        inputSchema: slugSchema,
-      },
-      async ({ slug }) => {
-        try {
-          const resource = serializeResource(await client.getResource(slug));
-          return toolSuccess(`Resource ${slug} loaded.`, { resource });
-        } catch (error) {
-          logger.warn('marvin_get_resource failed', { slug, error });
-          return toolError(error, 'Getting Marvin resource');
-        }
-      },
-    );
-
     server.registerResource(
       'workspace-resources',
       'marvin://resources',
