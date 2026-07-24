@@ -27,7 +27,10 @@ const fakeTools: AIToolInfo[] = [
   },
 ];
 
-function fakePlatform(invoke = vi.fn(async () => ({ ok: true }))) {
+/** Each test supplies an `invoke` returning its own payload shape, so keep the param wide. */
+type FakeInvoke = (...args: never[]) => Promise<unknown>;
+
+function fakePlatform(invoke: FakeInvoke = vi.fn(async () => ({ ok: true }))) {
   return { ai: { tools: { invoke } } } as any;
 }
 

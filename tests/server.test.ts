@@ -9,11 +9,6 @@ function registered(
   return Object.keys((server as Record<string, Record<string, unknown>>)[key] ?? {});
 }
 
-function getHandler(server: unknown, kind: string, name: string) {
-  const reg = (server as any)[kind];
-  return reg[name]?.handler ?? reg[name]?.callback;
-}
-
 describe('createServer', () => {
   it('registers read tools and omits mutation tools in read-only mode', () => {
     const server = createServer({
