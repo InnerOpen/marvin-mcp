@@ -2,14 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { rawJson, pick, jsonText } from '../src/serializers/common.js';
 import { serializeAsset } from '../src/serializers/asset.js';
 import { serializeEntry, serializeEntrySummary } from '../src/serializers/entry.js';
-import {
-  serializeCollection,
-  serializeCollectionSummary,
-} from '../src/serializers/collection.js';
-import {
-  serializeResource,
-  serializeResourceSummary,
-} from '../src/serializers/resource.js';
+import { serializeCollection, serializeCollectionSummary } from '../src/serializers/collection.js';
+import { serializeResource, serializeResourceSummary } from '../src/serializers/resource.js';
 import { serializeWorkspaceInfo, serializeSite } from '../src/serializers/workspace.js';
 
 describe('common utilities', () => {
@@ -210,9 +204,7 @@ describe('serializeCollection', () => {
       sortOrder: 1,
       isSmart: true,
       smartRules: [{ field: 'status', value: 'published' }],
-      entries: [
-        { id: 'e1', title: 'About', slug: 'about', status: 'published' },
-      ],
+      entries: [{ id: 'e1', title: 'About', slug: 'about', status: 'published' }],
     });
 
     expect(result).toHaveProperty('smartRules');

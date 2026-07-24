@@ -95,9 +95,7 @@ describe('createLogger', () => {
 
     logger.debug('test', { key: 'value' });
 
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('{"key":"value"}'),
-    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('{"key":"value"}'));
     spy.mockRestore();
   });
 
@@ -107,7 +105,7 @@ describe('createLogger', () => {
 
     logger.debug('test', { token: 'secret123' });
 
-    const output = (spy.mock.calls[0]![0] as string);
+    const output = spy.mock.calls[0]![0] as string;
     expect(output).not.toContain('secret123');
     expect(output).toContain('[REDACTED]');
     spy.mockRestore();

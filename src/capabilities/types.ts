@@ -1,5 +1,10 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { PlatformClient, AIOperationInfo, AIToolInfo, Automation } from '@inneropen/marvin-sdk/platform';
+import type {
+  PlatformClient,
+  AIOperationInfo,
+  AIToolInfo,
+  Automation,
+} from '@inneropen/marvin-sdk/platform';
 import type { MarvinClientLike } from '../client.js';
 import type { MarvinMcpConfig } from '../config.js';
 import type { Logger } from '../logger.js';

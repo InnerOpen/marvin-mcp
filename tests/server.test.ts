@@ -4,7 +4,11 @@ import { createFakeClient, silentLogger, testConfig } from './fakes.js';
 
 function registered(
   server: unknown,
-  key: '_registeredTools' | '_registeredPrompts' | '_registeredResources' | '_registeredResourceTemplates',
+  key:
+    | '_registeredTools'
+    | '_registeredPrompts'
+    | '_registeredResources'
+    | '_registeredResourceTemplates',
 ) {
   return Object.keys((server as Record<string, Record<string, unknown>>)[key] ?? {});
 }
@@ -283,7 +287,9 @@ describe('resource template handlers', () => {
       logger: silentLogger,
     });
     const template = (server as any)._registeredResourceTemplates.entry;
-    const result = await template.readCallback(makeUri('marvin://entries/about'), { slug: 'about' });
+    const result = await template.readCallback(makeUri('marvin://entries/about'), {
+      slug: 'about',
+    });
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.entry).toHaveProperty('slug', 'about');
@@ -294,7 +300,9 @@ describe('resource template handlers', () => {
     vi.spyOn(client, 'getEntry').mockResolvedValue(null);
     const server = createServer({ config: testConfig, client, logger: silentLogger });
     const template = (server as any)._registeredResourceTemplates.entry;
-    const result = await template.readCallback(makeUri('marvin://entries/missing'), { slug: 'missing' });
+    const result = await template.readCallback(makeUri('marvin://entries/missing'), {
+      slug: 'missing',
+    });
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.error).toHaveProperty('code', 'not_found');
@@ -307,7 +315,9 @@ describe('resource template handlers', () => {
       logger: silentLogger,
     });
     const template = (server as any)._registeredResourceTemplates.collection;
-    const result = await template.readCallback(makeUri('marvin://collections/pages'), { slug: 'pages' });
+    const result = await template.readCallback(makeUri('marvin://collections/pages'), {
+      slug: 'pages',
+    });
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.collection).toHaveProperty('slug', 'pages');
@@ -318,7 +328,9 @@ describe('resource template handlers', () => {
     vi.spyOn(client, 'getCollection').mockResolvedValue(null);
     const server = createServer({ config: testConfig, client, logger: silentLogger });
     const template = (server as any)._registeredResourceTemplates.collection;
-    const result = await template.readCallback(makeUri('marvin://collections/missing'), { slug: 'missing' });
+    const result = await template.readCallback(makeUri('marvin://collections/missing'), {
+      slug: 'missing',
+    });
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.error).toHaveProperty('code', 'not_found');
@@ -331,7 +343,9 @@ describe('resource template handlers', () => {
       logger: silentLogger,
     });
     const template = (server as any)._registeredResourceTemplates.resource;
-    const result = await template.readCallback(makeUri('marvin://resources/fabric'), { slug: 'fabric' });
+    const result = await template.readCallback(makeUri('marvin://resources/fabric'), {
+      slug: 'fabric',
+    });
     const parsed = JSON.parse(result.contents[0].text);
 
     expect(parsed.resource).toHaveProperty('slug', 'fabric');

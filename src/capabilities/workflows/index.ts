@@ -22,7 +22,9 @@ export const workflowsCapability: Capability = {
 
   register({ server, platform, workflows, logger }) {
     if (!platform) {
-      logger.info('workflows: no user token configured — workflow tools disabled (read-only mode).');
+      logger.info(
+        'workflows: no user token configured — workflow tools disabled (read-only mode).',
+      );
       return;
     }
 

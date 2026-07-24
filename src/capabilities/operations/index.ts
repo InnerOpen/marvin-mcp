@@ -29,7 +29,9 @@ export const operationsCapability: Capability = {
 
   register({ server, platform, operations, logger }) {
     if (!platform) {
-      logger.info('operations: no user token configured — authoring tools disabled (read-only mode).');
+      logger.info(
+        'operations: no user token configured — authoring tools disabled (read-only mode).',
+      );
       return;
     }
 
@@ -44,7 +46,12 @@ export const operationsCapability: Capability = {
         inputSchema: {
           entryType: z.string().describe('entry type slug or id'),
           brief: z.string().describe('what the entry should be about'),
-          assetIds: z.array(z.string()).optional().describe('image asset ids to attach / use as vision input. Order matters: first → hero, and only the first 4 are sent to the model as vision — list the most important images first.'),
+          assetIds: z
+            .array(z.string())
+            .optional()
+            .describe(
+              'image asset ids to attach / use as vision input. Order matters: first → hero, and only the first 4 are sent to the model as vision — list the most important images first.',
+            ),
           modelOverride: z.string().optional(),
         },
       },
@@ -82,7 +89,10 @@ export const operationsCapability: Capability = {
           inputSchema: {
             entityType: z.string().optional().describe('entity type, e.g. "entry"'),
             entityId: z.string().optional().describe('id of the entity to operate on'),
-            input: z.record(z.unknown()).optional().describe("operation input matching the op's input schema"),
+            input: z
+              .record(z.unknown())
+              .optional()
+              .describe("operation input matching the op's input schema"),
           },
         },
         async ({ entityType, entityId, input }) => {

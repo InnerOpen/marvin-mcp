@@ -1,5 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { PlatformClient, AIOperationInfo, AIToolInfo, Automation } from '@inneropen/marvin-sdk/platform';
+import type {
+  PlatformClient,
+  AIOperationInfo,
+  AIToolInfo,
+  Automation,
+} from '@inneropen/marvin-sdk/platform';
 import type { MarvinClientLike } from './client.js';
 import type { MarvinMcpConfig } from './config.js';
 import type { Logger } from './logger.js';
@@ -15,7 +20,15 @@ export interface CreateServerOptions {
   logger: Logger;
 }
 
-export function createServer({ config, client, platform, operations, tools, workflows, logger }: CreateServerOptions) {
+export function createServer({
+  config,
+  client,
+  platform,
+  operations,
+  tools,
+  workflows,
+  logger,
+}: CreateServerOptions) {
   const server = new McpServer(
     {
       name: '@inneropen/marvin-mcp',

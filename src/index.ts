@@ -32,9 +32,7 @@ async function main() {
     try {
       // ADMIN-gated: a non-admin / user-less token may 403 — degrade to no workflows.
       const automations = await platform.automations.list();
-      workflows = automations.filter(
-        (wf) => wf.enabled && wf.definition?.trigger?.type === 'mcp',
-      );
+      workflows = automations.filter((wf) => wf.enabled && wf.definition?.trigger?.type === 'mcp');
     } catch (error) {
       workflows = [];
       logger.warn('Could not pre-fetch workflows (automations are admin-gated)', error);

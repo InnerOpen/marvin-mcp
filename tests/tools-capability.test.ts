@@ -75,7 +75,10 @@ describe('toolsCapability projection', () => {
     const tool = (server as any)._registeredTools.marvin_get_entry;
     const result = await tool.handler({ args: { id_or_slug: 'about' } }, {});
 
-    expect(invoke).toHaveBeenCalledWith('get_entry', { args: { id_or_slug: 'about' }, source: 'mcp' });
+    expect(invoke).toHaveBeenCalledWith('get_entry', {
+      args: { id_or_slug: 'about' },
+      source: 'mcp',
+    });
     expect(result.structuredContent).toHaveProperty('title', 'About');
   });
 
