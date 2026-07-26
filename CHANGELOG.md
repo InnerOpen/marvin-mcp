@@ -1,3 +1,18 @@
+# [1.1.0](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0...v1.1.0) (2026-07-26)
+
+
+### Bug Fixes
+
+* **deps:** pin @inneropen/marvin-sdk to ^3.3.0 ([f931e79](https://github.com/InnerOpen/marvin-mcp/commit/f931e79c85ed7bf52274027dca61384d6b595f7e))
+* **types,tests:** clear typecheck + lint errors, tighten tsconfig ([143b25a](https://github.com/InnerOpen/marvin-mcp/commit/143b25ac8c40717c1d5ee8eb2ef60f51f12d78a1))
+
+
+### Features
+
+* add read-only insight/forms/entry-type MCP tools ([4af5ea3](https://github.com/InnerOpen/marvin-mcp/commit/4af5ea35f07802a5ed56afa797b12ac8c6c5b6b9))
+* **mcp:** project core tool registry + workflows; drop hand-written content tools ([b14fd29](https://github.com/InnerOpen/marvin-mcp/commit/b14fd29fe6d98ffd6c7f867f32d745c520d736c6))
+* **serializer:** pass entry tags through serializeEntry ([c00124b](https://github.com/InnerOpen/marvin-mcp/commit/c00124bff2ab8a7c4be1c0dd54bd88dfa5121445))
+
 # [1.0.0-next.3](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0-next.2...v1.0.0-next.3) (2026-07-19)
 
 ### Features
