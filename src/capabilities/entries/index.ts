@@ -1,65 +1,19 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
 import { MarvinObjectNotFoundError } from '../../errors/types.js';
-import { resourceError, jsonResource, toolError, toolSuccess } from '../../mcp-result.js';
-import { serializeEntry, serializeEntrySummary } from '../../serializers/entry.js';
+import { resourceError, jsonResource } from '../../mcp-result.js';
+import { serializeEntry } from '../../serializers/entry.js';
 import type { Capability } from '../types.js';
 
-const listEntriesSchema = z.object({
-  entryType: z.string().optional(),
-  collection: z.string().optional(),
-  status: z.string().optional(),
-  limit: z.number().int().positive().max(100).optional(),
-  offset: z.number().int().min(0).optional(),
-});
-
-const slugSchema = z.object({ slug: z.string().min(1) });
-
+/**
+ * Entries — read-only entry RESOURCE + authoring prompts. The `marvin_list_entries` /
+ * `marvin_get_entry` TOOLS moved to the core tool registry (projected by `toolsCapability` as
+ * `marvin_find_entries` / `marvin_get_entry`); the registry is the single source of truth.
+ */
 export const entriesCapability: Capability = {
   id: 'entries',
   title: 'Entries',
-  summary: 'List, find, and inspect published Marvin entries.',
+  summary: 'Read published Marvin entries (resource) and guide authoring (prompts).',
   register({ server, client, logger }) {
-    server.registerTool(
-      'marvin_list_entries',
-      {
-        title: 'List Marvin entries',
-        description:
-          'List published Marvin entries with SDK-supported entryType, collection, limit, and offset filters.',
-        inputSchema: listEntriesSchema,
-      },
-      async (args) => {
-        try {
-          const entries = await client.getEntries(args);
-          const data = { entries: entries.map(serializeEntrySummary), count: entries.length };
-          return toolSuccess(`Found ${entries.length} entries.`, data);
-        } catch (error) {
-          logger.warn('marvin_list_entries failed', error);
-          return toolError(error, 'Listing Marvin entries');
-        }
-      },
-    );
-
-    server.registerTool(
-      'marvin_get_entry',
-      {
-        title: 'Find Marvin entry',
-        description: 'Find one Marvin entry by slug using the Marvin SDK publishing client.',
-        inputSchema: slugSchema,
-      },
-      async ({ slug }) => {
-        try {
-          const entryResult = await client.getEntry(slug);
-          if (entryResult === null) throw new MarvinObjectNotFoundError('entry', slug);
-          const entry = serializeEntry(entryResult);
-          return toolSuccess(`Entry ${slug} loaded.`, { entry });
-        } catch (error) {
-          logger.warn('marvin_get_entry failed', { slug, error });
-          return toolError(error, 'Getting Marvin entry');
-        }
-      },
-    );
-
     server.registerResource(
       'entry',
       new ResourceTemplate('marvin://entries/{slug}', { list: undefined }),

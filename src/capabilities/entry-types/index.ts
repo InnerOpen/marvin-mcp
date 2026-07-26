@@ -2,10 +2,15 @@ import { jsonResource, resourceError } from '../../mcp-result.js';
 import { serializeEntrySummary } from '../../serializers/entry.js';
 import type { Capability } from '../types.js';
 
+/**
+ * Entry Types — token-less inferred-from-entries RESOURCE + audit prompt. The entry-type TOOLS
+ * (list_entry_types / get_entry_type, incl. full schema + recipe) live in the core tool registry
+ * (projected by `toolsCapability`); the registry is the single source of truth.
+ */
 export const entryTypesCapability: Capability = {
   id: 'entry-types',
   title: 'Entry Types',
-  summary: 'Inspect entry type information inferred from published entries.',
+  summary: 'Inspect entry types inferred from entries (resource) and audit the model (prompt).',
   register({ server, client, logger }) {
     server.registerResource(
       'entry-types',

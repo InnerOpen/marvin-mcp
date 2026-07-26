@@ -36,10 +36,7 @@ describe('loadConfig', () => {
       },
     };
 
-    const config = loadConfig(
-      { MARVIN_API_URL: 'https://marvin.example.com' },
-      credentials,
-    );
+    const config = loadConfig({ MARVIN_API_URL: 'https://marvin.example.com' }, credentials);
 
     expect(config.workspaceSlug).toBe('my-workspace');
     expect(config.siteClientToken).toBe('cred_token_123');

@@ -1,81 +1,19 @@
 import { ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
 import { MarvinObjectNotFoundError } from '../../errors/types.js';
-import { jsonResource, resourceError, toolError, toolSuccess } from '../../mcp-result.js';
-import { serializeCollection, serializeCollectionSummary, serializeCollectionEntry } from '../../serializers/collection.js';
-import { serializeEntrySummary } from '../../serializers/entry.js';
+import { jsonResource, resourceError } from '../../mcp-result.js';
+import { serializeCollection, serializeCollectionSummary } from '../../serializers/collection.js';
 import type { Capability } from '../types.js';
 
-const slugSchema = z.object({ slug: z.string().min(1) });
-
+/**
+ * Collections — read-only RESOURCES + review prompt. All collection TOOLS
+ * (list_collections / get_collection / get_collection_entries) live in the core tool registry
+ * (projected by `toolsCapability`); the registry is the single source of truth.
+ */
 export const collectionsCapability: Capability = {
   id: 'collections',
   title: 'Collections',
-  summary: 'Review published Marvin collections and their entries.',
+  summary: 'Read published Marvin collections (resources) and guide review (prompt).',
   register({ server, client, logger }) {
-    server.registerTool(
-      'marvin_list_collections',
-      {
-        title: 'List Marvin collections',
-        description: 'List collections available in the configured Marvin workspace.',
-      },
-      async () => {
-        try {
-          const collections = await client.getCollections();
-          const data = {
-            collections: collections.map(serializeCollectionSummary),
-            count: collections.length,
-          };
-          return toolSuccess(`Found ${collections.length} collections.`, data);
-        } catch (error) {
-          logger.warn('marvin_list_collections failed', error);
-          return toolError(error, 'Listing Marvin collections');
-        }
-      },
-    );
-
-    server.registerTool(
-      'marvin_get_collection',
-      {
-        title: 'Get Marvin collection',
-        description: 'Get one Marvin collection by slug.',
-        inputSchema: slugSchema,
-      },
-      async ({ slug }) => {
-        try {
-          const collectionResult = await client.getCollection(slug);
-          if (collectionResult === null) throw new MarvinObjectNotFoundError('collection', slug);
-          const collection = serializeCollectionSummary(collectionResult);
-          return toolSuccess(`Collection ${slug} loaded.`, { collection });
-        } catch (error) {
-          logger.warn('marvin_get_collection failed', { slug, error });
-          return toolError(error, 'Getting Marvin collection');
-        }
-      },
-    );
-
-    server.registerTool(
-      'marvin_get_collection_entries',
-      {
-        title: 'Get Marvin collection entries',
-        description: 'List entries belonging to a Marvin collection by collection slug.',
-        inputSchema: slugSchema,
-      },
-      async ({ slug }) => {
-        try {
-          const entries = await client.getCollectionEntries(slug);
-          const data = {
-            entries: entries.map(serializeCollectionEntry),
-            count: entries.length,
-          };
-          return toolSuccess(`Collection ${slug} entries loaded.`, data);
-        } catch (error) {
-          logger.warn('marvin_get_collection_entries failed', { slug, error });
-          return toolError(error, 'Getting Marvin collection entries');
-        }
-      },
-    );
-
     server.registerResource(
       'workspace-collections',
       'marvin://collections',

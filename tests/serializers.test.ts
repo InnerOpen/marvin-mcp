@@ -2,15 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { rawJson, pick, jsonText } from '../src/serializers/common.js';
 import { serializeAsset } from '../src/serializers/asset.js';
 import { serializeEntry, serializeEntrySummary } from '../src/serializers/entry.js';
-import {
-  serializeCollection,
-  serializeCollectionSummary,
-} from '../src/serializers/collection.js';
-import {
-  serializeResource,
-  serializeResourceSummary,
-} from '../src/serializers/resource.js';
+import { serializeCollection, serializeCollectionSummary } from '../src/serializers/collection.js';
+import { serializeResource, serializeResourceSummary } from '../src/serializers/resource.js';
 import { serializeWorkspaceInfo, serializeSite } from '../src/serializers/workspace.js';
+import { serializeEntryType, serializeEntryTypeSummary } from '../src/serializers/entryType.js';
 
 describe('common utilities', () => {
   describe('rawJson', () => {
@@ -210,9 +205,7 @@ describe('serializeCollection', () => {
       sortOrder: 1,
       isSmart: true,
       smartRules: [{ field: 'status', value: 'published' }],
-      entries: [
-        { id: 'e1', title: 'About', slug: 'about', status: 'published' },
-      ],
+      entries: [{ id: 'e1', title: 'About', slug: 'about', status: 'published' }],
     });
 
     expect(result).toHaveProperty('smartRules');
@@ -300,5 +293,57 @@ describe('serializeSite', () => {
     expect(result).toHaveProperty('title', 'Demo Site');
     expect(result).toHaveProperty('locale', 'en-US');
     expect(result).not.toHaveProperty('secretKey');
+  });
+});
+
+describe('serializeEntryType', () => {
+  const full = {
+    id: 'page',
+    name: 'Page',
+    slug: 'page',
+    icon: '📄',
+    color: '#333',
+    description: 'A page',
+    sortOrder: 1,
+    isSystem: true,
+    isRendered: true,
+    createdAt: '2026-01-01',
+    updateAt: '2026-02-01',
+    schemaJson: { fields: [] },
+    renderingJson: { renderer: 'page' },
+    capabilitiesJson: { routable: true },
+    recipeJson: { steps: [] },
+    extra: 'dropped',
+  };
+
+  it('summary picks the whitelisted fields and drops everything else', () => {
+    const s = serializeEntryTypeSummary(full);
+    expect(s).toMatchObject({ id: 'page', name: 'Page', slug: 'page', isSystem: true, isRendered: true });
+    expect(s).not.toHaveProperty('extra');
+    expect(s).not.toHaveProperty('schemaJson');
+  });
+
+  it('accepts both updateAt and updatedAt spellings', () => {
+    expect(serializeEntryTypeSummary({ updatedAt: 'x' })).toEqual({ updatedAt: 'x' });
+    expect(serializeEntryTypeSummary({ updateAt: 'y' })).toEqual({ updateAt: 'y' });
+  });
+
+  it('omits absent fields', () => {
+    expect(serializeEntryTypeSummary({ slug: 'only' })).toEqual({ slug: 'only' });
+  });
+
+  it('full serializer adds the JSON blobs on top of the summary', () => {
+    expect(serializeEntryType(full)).toMatchObject({
+      slug: 'page',
+      schemaJson: { fields: [] },
+      renderingJson: { renderer: 'page' },
+      capabilitiesJson: { routable: true },
+      recipeJson: { steps: [] },
+    });
+  });
+
+  it('unwraps a model via toJSON', () => {
+    const model = { toJSON: () => ({ slug: 'wrapped', schemaJson: { a: 1 } }) };
+    expect(serializeEntryType(model)).toMatchObject({ slug: 'wrapped', schemaJson: { a: 1 } });
   });
 });

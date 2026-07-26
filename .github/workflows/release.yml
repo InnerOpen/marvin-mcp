@@ -4,7 +4,12 @@ on:
   push:
     branches:
       - main
-      - develop
+  # `develop` deliberately does NOT auto-release. It used to, which minted a public
+  # `-next.N` prerelease and pushed a `chore(release)` commit back on every single push.
+  # The packages are established on npm now and local consumers use `npm link`, so that
+  # churn bought nothing. Cut a prerelease from develop on demand via this dispatch —
+  # .releaserc still carries the develop prerelease config, so it versions correctly.
+  workflow_dispatch:
 
 permissions:
   contents: write

@@ -12,10 +12,7 @@ describe('normalizeError', () => {
   });
 
   it('maps MarvinObjectNotFoundError to not_found with kind and slug', () => {
-    const error = normalizeError(
-      new MarvinObjectNotFoundError('entry', 'about'),
-      'Testing',
-    );
+    const error = normalizeError(new MarvinObjectNotFoundError('entry', 'about'), 'Testing');
     expect(error.code).toBe('not_found');
     expect(error.message).toContain('entry');
     expect(error.message).toContain('about');
@@ -23,10 +20,7 @@ describe('normalizeError', () => {
   });
 
   it('maps 401 status to authentication_failed', () => {
-    const error = normalizeError(
-      Object.assign(new Error('denied'), { status: 401 }),
-      'Testing',
-    );
+    const error = normalizeError(Object.assign(new Error('denied'), { status: 401 }), 'Testing');
     expect(error.code).toBe('authentication_failed');
     expect(error.status).toBe(401);
   });
@@ -46,10 +40,7 @@ describe('normalizeError', () => {
   });
 
   it('maps 403 status to authorization_failed', () => {
-    const error = normalizeError(
-      Object.assign(new Error('no access'), { status: 403 }),
-      'Testing',
-    );
+    const error = normalizeError(Object.assign(new Error('no access'), { status: 403 }), 'Testing');
     expect(error.code).toBe('authorization_failed');
     expect(error.status).toBe(403);
   });
@@ -82,10 +73,7 @@ describe('normalizeError', () => {
   });
 
   it('maps 400 status to validation_error', () => {
-    const error = normalizeError(
-      Object.assign(new Error('bad input'), { status: 400 }),
-      'Testing',
-    );
+    const error = normalizeError(Object.assign(new Error('bad input'), { status: 400 }), 'Testing');
     expect(error.code).toBe('validation_error');
     expect(error.status).toBe(400);
   });
@@ -104,10 +92,7 @@ describe('normalizeError', () => {
     expect(normalizeError(new Error('request timeout'), 'Testing').code).toBe('timeout');
     expect(normalizeError(new Error('connection aborted'), 'Testing').code).toBe('timeout');
     expect(
-      normalizeError(
-        Object.assign(new Error('fail'), { code: 'NETWORK_ERROR' }),
-        'Testing',
-      ).code,
+      normalizeError(Object.assign(new Error('fail'), { code: 'NETWORK_ERROR' }), 'Testing').code,
     ).toBe('timeout');
   });
 
@@ -132,10 +117,7 @@ describe('normalizeError', () => {
   });
 
   it('reads status from response.status', () => {
-    const error = normalizeError(
-      { message: 'nested', response: { status: 401 } },
-      'Testing',
-    );
+    const error = normalizeError({ message: 'nested', response: { status: 401 } }, 'Testing');
     expect(error.code).toBe('authentication_failed');
   });
 
