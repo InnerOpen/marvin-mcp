@@ -13,6 +13,14 @@ import type { Capability } from '../types.js';
  */
 const MCP_SOURCE = 'mcp';
 
+function isErrorResult(res: unknown): res is Record<string, unknown> & { error: string } {
+  return (
+    typeof res === 'object' &&
+    res !== null &&
+    typeof (res as { error?: unknown }).error === 'string'
+  );
+}
+
 function toolNameFor(name: string): string {
   return `marvin_${name.replace(/[^a-zA-Z0-9]+/g, '_')}`;
 }
@@ -48,6 +56,18 @@ export const toolsCapability: Capability = {
               args: args ?? {},
               source: MCP_SOURCE,
             });
+            // A tool that did not do what was asked answers 200 with `{ error }` — bad input, or a
+            // refusal (a bulk write too big to run unasked, archiving a published entry): nothing
+            // was written. Report it as an error so the caller doesn't read it as done.
+            if (isErrorResult(res)) {
+              return {
+                isError: true,
+                content: [
+                  { type: 'text' as const, text: `Tool "${tool.name}" did not run: ${res.error}` },
+                ],
+                structuredContent: res,
+              };
+            }
             return toolSuccess(`Tool "${tool.name}" ran.`, res);
           } catch (error) {
             logger.warn(`tool ${tool.name} failed`, error);
