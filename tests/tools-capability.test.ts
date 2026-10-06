@@ -82,6 +82,33 @@ describe('toolsCapability projection', () => {
     expect(result.structuredContent).toHaveProperty('title', 'About');
   });
 
+  it('reports a tool that answers with an error (a refusal) as an error, with its message', async () => {
+    // e.g. attach_tag too big to run unasked: the backend writes nothing and says why (HTTP 200)
+    const refusal = {
+      error:
+        'Not done: Attach 6 tags to 4 assets (24 links) is too large to apply without approval.',
+      targets: 4,
+      items: 6,
+      links: 24,
+      limit: 20,
+    };
+    const server = createServer({
+      config: testConfig,
+      client: createFakeClient(),
+      platform: fakePlatform(vi.fn(async () => refusal)),
+      tools: fakeTools,
+      logger: silentLogger,
+    });
+
+    const tool = (server as any)._registeredTools.marvin_find_entries;
+    const result = await tool.handler({ args: {} }, {});
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0].text).toContain(refusal.error);
+    expect(result.content[0].text).not.toContain('ran.');
+    expect(result.structuredContent).toEqual(refusal);
+  });
+
   it('surfaces a structured error when the invoke call fails', async () => {
     const invoke = vi.fn(async () => {
       throw Object.assign(new Error('boom'), { status: 500 });
