@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/InnerOpen/marvin-mcp/compare/v1.1.0...v1.1.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* **tools:** report a registry tool's { error } answer as an error ([0677454](https://github.com/InnerOpen/marvin-mcp/commit/0677454963ce40a6ca120c682f9281a7c1b12394))
+
 # [1.1.0](https://github.com/InnerOpen/marvin-mcp/compare/v1.0.0...v1.1.0) (2026-07-26)
 
 
