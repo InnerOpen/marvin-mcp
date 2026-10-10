@@ -137,7 +137,8 @@ export const sdkCapabilityInventory: SdkCapabilityInventoryItem[] = [
       'Administrative modules affect authorization, secrets/tokens, users, system state.',
     maturity: 'Available in platform SDK; high-impact operations.',
     recommendedMcpMapping: 'Mostly future admin capabilities; do not expose in first release.',
-    firstReleaseExposure: 'Not exposed.',
+    firstReleaseExposure:
+      'Not exposed. One exception projects as an agent tool: set_automation_enabled (switch a workflow or integration action on/off), which always asks first, so an unattended MCP call is refused.',
   },
 ];
 
