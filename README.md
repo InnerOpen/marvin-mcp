@@ -41,7 +41,7 @@ npm run dev
 
 ## Configuration
 
-Required:
+Required (each can instead come from `~/.marvin/credentials.json`, see below):
 
 ```text
 MARVIN_API_URL
@@ -52,9 +52,23 @@ MARVIN_WORKSPACE_SLUG
 Optional:
 
 ```text
+MARVIN_USER_TOKEN
 MARVIN_MCP_LOG_LEVEL=silent|error|warn|info|debug
 MARVIN_MCP_READ_ONLY=true|false
 ```
+
+### Credentials from the Marvin CLI
+
+If you have logged in with the Marvin CLI, the server reads `~/.marvin/credentials.json` and no extra env vars are needed. In particular, you do not need to pass `MARVIN_USER_TOKEN`: the CLI login is enough to enable the authoring (platform) tools.
+
+| Setting    | Resolution order (first match wins)                                                |
+| ---------- | ---------------------------------------------------------------------------------- |
+| Workspace  | `MARVIN_WORKSPACE_SLUG`, then `activeWorkspace`                                    |
+| API URL    | `MARVIN_API_URL`, then top-level `apiUrl`                                          |
+| Site token | `workspaces[slug].siteToken`, then `MARVIN_SITE_CLIENT_TOKEN`                      |
+| User token | `workspaces[slug].userToken`, then top-level `userToken`, then `MARVIN_USER_TOKEN` |
+
+Stored tokens take precedence over env vars so a fresh `marvin login` takes effect even if the MCP client has an old token cached in its env config. Set `MARVIN_USER_TOKEN` only for CI/automation without a credentials file.
 
 Default: `MARVIN_MCP_READ_ONLY` is `true`. Current SDK-backed mutation tools are not implemented, so write tools are absent either way in this first release.
 

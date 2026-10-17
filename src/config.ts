@@ -30,6 +30,8 @@ export class ConfigurationError extends Error {
 }
 
 interface MarvinCredentials {
+  apiUrl?: string;
+  userToken?: string;
   activeWorkspace?: string;
   workspaces?: Record<string, { siteToken?: string; userToken?: string }>;
 }
@@ -62,10 +64,13 @@ export function loadConfig(
   const siteClientToken = storedSiteToken || env.MARVIN_SITE_CLIENT_TOKEN;
 
   const storedUserToken = workspaceSlug ? creds.workspaces?.[workspaceSlug]?.userToken : undefined;
-  const userToken = storedUserToken || env.MARVIN_USER_TOKEN;
+  // The Marvin CLI saves the login's user token at the top level of credentials.json; a
+  // per-workspace token (if any) is more specific, so it wins. Env var remains the fallback.
+  const userToken = storedUserToken || creds.userToken || env.MARVIN_USER_TOKEN;
 
   const result = configSchema.safeParse({
-    apiUrl: env.MARVIN_API_URL,
+    // Explicit env var wins; otherwise use the apiUrl the CLI saved at login.
+    apiUrl: env.MARVIN_API_URL || creds.apiUrl,
     siteClientToken,
     userToken,
     workspaceSlug,

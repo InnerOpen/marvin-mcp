@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { describe, expect, it } from 'vitest';
 import { ConfigurationError, loadConfig, loadCredentials, toSdkConfig } from '../src/config.js';
 
@@ -135,6 +138,69 @@ describe('loadConfig', () => {
       MARVIN_MCP_READ_ONLY: 'yes',
     });
     expect(config.readOnly).toBe(false);
+  });
+});
+
+describe('loadConfig stored credentials', () => {
+  const env = { MARVIN_WORKSPACE_SLUG: 'demo', MARVIN_API_URL: 'https://env.example.com' };
+  const base = { workspaces: { demo: { siteToken: 'site' } } };
+
+  it('falls back to the top-level userToken saved by the CLI', () => {
+    const config = loadConfig(env, { ...base, userToken: 'top-user' });
+    expect(config.userToken).toBe('top-user');
+  });
+
+  it('prefers the per-workspace userToken over the top-level one', () => {
+    const config = loadConfig(env, {
+      userToken: 'top-user',
+      workspaces: { demo: { siteToken: 'site', userToken: 'ws-user' } },
+    });
+    expect(config.userToken).toBe('ws-user');
+  });
+
+  it('prefers stored userToken over MARVIN_USER_TOKEN, which remains the last fallback', () => {
+    const withEnv = { ...env, MARVIN_USER_TOKEN: 'env-user' };
+    expect(loadConfig(withEnv, { ...base, userToken: 'top-user' }).userToken).toBe('top-user');
+    expect(loadConfig(withEnv, base).userToken).toBe('env-user');
+    expect(loadConfig(env, base).userToken).toBeUndefined();
+  });
+
+  it('falls back to the top-level apiUrl when MARVIN_API_URL is unset', () => {
+    const config = loadConfig(
+      { MARVIN_WORKSPACE_SLUG: 'demo' },
+      { ...base, apiUrl: 'https://cli.example.com' },
+    );
+    expect(config.apiUrl).toBe('https://cli.example.com');
+  });
+
+  it('prefers MARVIN_API_URL over the stored apiUrl', () => {
+    const config = loadConfig(env, { ...base, apiUrl: 'https://cli.example.com' });
+    expect(config.apiUrl).toBe('https://env.example.com');
+  });
+
+  it('reads a CLI-shaped credentials file end to end', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'marvin-creds-'));
+    try {
+      const path = join(dir, 'credentials.json');
+      writeFileSync(
+        path,
+        JSON.stringify({
+          apiUrl: 'https://cli.example.com',
+          userToken: 'fake-top-user',
+          activeWorkspace: 'demo',
+          workspaces: { demo: { siteToken: 'fake-site' } },
+        }),
+      );
+      const config = loadConfig({}, loadCredentials(path));
+      expect(config).toMatchObject({
+        apiUrl: 'https://cli.example.com',
+        userToken: 'fake-top-user',
+        siteClientToken: 'fake-site',
+        workspaceSlug: 'demo',
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
