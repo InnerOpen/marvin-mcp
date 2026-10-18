@@ -47,27 +47,31 @@ export const sdkCapabilityInventory: SdkCapabilityInventoryItem[] = [
       'marvin_list_collections, marvin_get_collection, marvin_get_collection_entries, marvin://collections/{slug}',
   },
   {
-    sdkModule: 'Publishing Assets',
-    purpose: 'Read published asset metadata.',
-    auth: 'site token',
+    sdkModule: 'Platform Assets (read)',
+    purpose:
+      'Read asset metadata. The publishing API no longer serves assets; entries still carry theirs inline.',
+    auth: 'user token/session',
     readWrite: 'read',
-    exportedObjects: ['MarvinAsset', 'GetAssetsOptions'],
+    exportedObjects: ['AssetsModule', 'PlatformAsset'],
     relationships: 'Assets can be referenced by entries.',
     maturity:
       'Stable read list/get metadata; binary payloads are outside MCP output normalization.',
-    recommendedMcpMapping: 'Tools/resources returning metadata only.',
-    firstReleaseExposure: 'marvin_list_assets',
+    recommendedMcpMapping: 'Registry tools returning metadata only; absent without a user token.',
+    firstReleaseExposure: 'marvin_list_assets, marvin_get_asset (user token only)',
   },
   {
-    sdkModule: 'Publishing Resources',
-    purpose: 'Read reusable structured resources and related entries.',
-    auth: 'site token',
+    sdkModule: 'Platform Resources (read)',
+    purpose:
+      'Read reusable structured resources. The publishing API no longer serves resources; entries still carry theirs inline.',
+    auth: 'user token/session',
     readWrite: 'read',
-    exportedObjects: ['Resource', 'MarvinResource', 'GetResourcesOptions'],
+    exportedObjects: ['ResourcesModule', 'PlatformResource'],
     relationships: 'Resources can be referenced by entries.',
-    maturity: 'Stable read list/get; resource entries method exists in SDK.',
-    recommendedMcpMapping: 'Tools and resources for reviewing reusable references.',
-    firstReleaseExposure: 'marvin_list_resources, marvin_get_resource, marvin://resources/{slug}',
+    maturity: 'Stable read list/get; platform get is by id, so slug lookups resolve via list.',
+    recommendedMcpMapping:
+      'Registry tools and resources for reviewing reusable references; absent without a user token.',
+    firstReleaseExposure:
+      'marvin_list_resources, marvin_get_resource, marvin://resources, marvin://resources/{slug} (user token only)',
   },
   {
     sdkModule: 'Platform Entries',
@@ -166,11 +170,12 @@ export const publicCapabilitySummaries = [
   {
     id: 'assets',
     title: 'Assets',
-    summary: 'Review published Marvin asset metadata without returning binary payloads.',
+    summary:
+      'Review Marvin asset metadata without returning binary payloads (user token required).',
   },
   {
     id: 'resources',
     title: 'Resources',
-    summary: 'Review reusable Marvin structured resources.',
+    summary: 'Review reusable Marvin structured resources (user token required).',
   },
 ];

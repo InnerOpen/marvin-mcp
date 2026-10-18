@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createServer } from '../src/server.js';
-import { createFakeClient, silentLogger, testConfig } from './fakes.js';
+import { createFakeClient, createFakePlatform, silentLogger, testConfig } from './fakes.js';
 
 function registered(
   server: unknown,
@@ -65,6 +65,7 @@ describe('createServer', () => {
     const server = createServer({
       config: testConfig,
       client: createFakeClient(),
+      platform: createFakePlatform(),
       logger: silentLogger,
     });
 
@@ -96,7 +97,30 @@ describe('createServer', () => {
     expect(resources).toContain('marvin://workspace/site');
     expect(resources).toContain('marvin://collections');
     expect(resources).toContain('marvin://entry-types');
-    expect(resources).toContain('marvin://resources');
+    // Resources come from the platform API — not offered without a user token.
+    expect(resources).not.toContain('marvin://resources');
+  });
+
+  it('offers resource/asset surfaces only when a platform client is present', () => {
+    const without = createServer({
+      config: testConfig,
+      client: createFakeClient(),
+      logger: silentLogger,
+    });
+    expect(registered(without, '_registeredPrompts')).not.toContain('review_assets');
+    expect(registered(without, '_registeredPrompts')).not.toContain('review_resources');
+    expect(registered(without, '_registeredResourceTemplates')).not.toContain('resource');
+
+    const withPlatform = createServer({
+      config: testConfig,
+      client: createFakeClient(),
+      platform: createFakePlatform(),
+      logger: silentLogger,
+    });
+    expect(registered(withPlatform, '_registeredResources')).toContain('marvin://resources');
+    expect(registered(withPlatform, '_registeredResourceTemplates')).toContain('resource');
+    expect(registered(withPlatform, '_registeredPrompts')).toContain('review_assets');
+    expect(registered(withPlatform, '_registeredPrompts')).toContain('review_resources');
   });
 
   it('invokes the SDK client from a token-less tool handler', async () => {
@@ -205,6 +229,7 @@ describe('resource handlers (MCP resources)', () => {
     const server = createServer({
       config: testConfig,
       client: createFakeClient(),
+      platform: createFakePlatform(),
       logger: silentLogger,
     });
     const resource = (server as any)._registeredResources['marvin://resources'];
@@ -213,6 +238,20 @@ describe('resource handlers (MCP resources)', () => {
 
     expect(parsed.count).toBe(1);
     expect(parsed.resources[0]).toHaveProperty('slug', 'fabric');
+  });
+
+  it('marvin://resources/{slug} returns an error for an unknown slug', async () => {
+    const server = createServer({
+      config: testConfig,
+      client: createFakeClient(),
+      platform: createFakePlatform(),
+      logger: silentLogger,
+    });
+    const template = (server as any)._registeredResourceTemplates['resource'];
+    const missing = await template.readCallback(makeUri('marvin://resources/nope'), {
+      slug: 'nope',
+    });
+    expect(JSON.parse(missing.contents[0].text)).toHaveProperty('error');
   });
 
   it('marvin://capabilities returns capability data', async () => {
@@ -264,9 +303,14 @@ describe('resource handlers (MCP resources)', () => {
   });
 
   it('resources resource returns error on failure', async () => {
-    const client = createFakeClient();
-    vi.spyOn(client, 'getResources').mockRejectedValue(new Error('fail'));
-    const server = createServer({ config: testConfig, client, logger: silentLogger });
+    const platform = createFakePlatform();
+    vi.spyOn(platform.resources, 'list').mockRejectedValue(new Error('fail'));
+    const server = createServer({
+      config: testConfig,
+      client: createFakeClient(),
+      platform,
+      logger: silentLogger,
+    });
     const resource = (server as any)._registeredResources['marvin://resources'];
     const result = await resource.readCallback(makeUri('marvin://resources'));
     const parsed = JSON.parse(result.contents[0].text);
@@ -340,6 +384,7 @@ describe('resource template handlers', () => {
     const server = createServer({
       config: testConfig,
       client: createFakeClient(),
+      platform: createFakePlatform(),
       logger: silentLogger,
     });
     const template = (server as any)._registeredResourceTemplates.resource;
@@ -420,6 +465,7 @@ describe('prompt handlers', () => {
     const server = createServer({
       config: testConfig,
       client: createFakeClient(),
+      platform: createFakePlatform(),
       logger: silentLogger,
     });
     const prompt = (server as any)._registeredPrompts.review_assets;
@@ -432,6 +478,7 @@ describe('prompt handlers', () => {
     const server = createServer({
       config: testConfig,
       client: createFakeClient(),
+      platform: createFakePlatform(),
       logger: silentLogger,
     });
     const prompt = (server as any)._registeredPrompts.review_resources;

@@ -9,7 +9,12 @@ export const assetsCapability: Capability = {
   id: 'assets',
   title: 'Assets',
   summary: 'Guide review of Marvin asset metadata (prompt); asset tools come from the registry.',
-  register({ server }) {
+  register({ server, platform, logger }) {
+    // The review prompt directs the model at asset tools, which exist only with a user token.
+    if (!platform) {
+      logger.info('assets: no user token configured — assets capability disabled.');
+      return;
+    }
     server.registerPrompt(
       'review_assets',
       {

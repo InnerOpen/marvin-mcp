@@ -66,44 +66,24 @@ export function createFakeClient(): MarvinClientLike {
       entries: [],
     }),
     getCollectionEntries: async () => [],
-    getAssets: async () => [
-      {
-        id: 'asset-1',
-        slug: 'hero',
-        name: 'Hero',
-        originalFilename: 'hero.jpg',
-        filename: 'hero.jpg',
-        extension: 'jpg',
-        mimeType: 'image/jpeg',
-        assetType: 'image',
-        fileSize: 10,
-        checksum: 'abc',
-        storageProvider: 's3',
-        storageKey: 'hidden-ish',
-        uploadedBy: 'user',
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-02',
-      },
-    ],
-    getResources: async () => [
-      {
-        id: 'resource-1',
-        name: 'Fabric',
-        slug: 'fabric',
-        resourceType: 'material',
-        createdAt: '2026-01-01',
-        updatedAt: '2026-01-02',
-      },
-    ],
-    getResource: async (slug) => ({
-      id: 'resource-1',
-      name: 'Fabric',
-      slug,
-      resourceType: 'material',
-      metadataJson: { weight: '10oz' },
-      createdAt: '2026-01-01',
-      updatedAt: '2026-01-02',
-    }),
-    getResourceEntries: async () => [],
   };
+}
+
+/** Minimal platform stub exposing only `resources.list` — what the resources capability reads. */
+export function createFakePlatform() {
+  return {
+    resources: {
+      list: async () => [
+        {
+          id: 'resource-1',
+          name: 'Fabric',
+          slug: 'fabric',
+          resourceType: 'material',
+          metadataJson: { weight: '10oz' },
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-02',
+        },
+      ],
+    },
+  } as any;
 }
